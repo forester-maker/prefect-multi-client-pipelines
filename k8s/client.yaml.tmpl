@@ -1,0 +1,66 @@
+# Per-client isolation unit. In production this is a Terraform module applied
+# in the client's Azure subscription (AKS namespace, Key Vault CSI, ADLS Gen2).
+# On the demo cluster: a namespace, a worker, and a PVC standing in for the container.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${NAMESPACE}
+  labels: {pipelines.client: "${CLIENT}"}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: prefect-worker, namespace: ${NAMESPACE}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: {name: prefect-worker, namespace: ${NAMESPACE}}
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/status", "events"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: prefect-worker, namespace: ${NAMESPACE}}
+subjects: [{kind: ServiceAccount, name: prefect-worker, namespace: ${NAMESPACE}}]
+roleRef: {kind: Role, name: prefect-worker, apiGroup: rbac.authorization.k8s.io}
+---
+# The client's lake. Real deployments mount nothing: pipelines talk to ADLS Gen2
+# over the client's private endpoint. Here a PVC plays the container.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: ${CONTAINER}, namespace: ${NAMESPACE}}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources: {requests: {storage: 2Gi}}
+---
+# The worker: the only process that talks to Prefect Cloud, outbound HTTPS only.
+# It polls work pool ${POOL} and submits one Kubernetes Job per flow run.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prefect-worker
+  namespace: ${NAMESPACE}
+  labels: {app: prefect-worker, pipelines.client: "${CLIENT}"}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: prefect-worker}}
+  template:
+    metadata: {labels: {app: prefect-worker}}
+    spec:
+      serviceAccountName: prefect-worker
+      containers:
+        - name: worker
+          image: prefecthq/prefect:3.8.8-python3.11-kubernetes
+          imagePullPolicy: IfNotPresent
+          args: ["prefect", "worker", "start", "--pool", "${POOL}", "--name", "${CLIENT}-worker-1", "--type", "kubernetes"]
+          env:
+            - {name: PREFECT_API_URL, valueFrom: {secretKeyRef: {name: prefect-api, key: PREFECT_API_URL}}}
+            - {name: PREFECT_API_KEY, valueFrom: {secretKeyRef: {name: prefect-api, key: PREFECT_API_KEY}}}
+            - {name: PREFECT_INTEGRATIONS_KUBERNETES_OBSERVER_NAMESPACES, value: '["${NAMESPACE}"]'}
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: "1", memory: 1Gi}

@@ -1,0 +1,63 @@
+name: acme-manufacturing
+display_name: Acme Manufacturing
+azure_subscription: acme-prod-eun-0042   # client's own subscription; our worker runs here
+lake_container: acme-lake                 # ADLS Gen2 container (PVC on the demo cluster)
+timezone: Europe/London
+residency: standard
+model_inputs: [customer_orders, work_orders, inventory_parts]   # silver fans in on these three
+feeds:
+  - {name: customer_orders, source: erp_cloud, cadence: 15m, rows: 1200}
+  - {name: customer_order_lines, source: erp_cloud, cadence: 15m, rows: 800}
+  - {name: shop_orders, source: erp_cloud, cadence: 15m, rows: 2400}
+  - {name: shop_order_operations, source: erp_cloud, cadence: 15m, rows: 600, busy: true}
+  - {name: inventory_parts, source: erp_cloud, cadence: 15m, rows: 1500}
+  - {name: inventory_part_in_stock, source: erp_cloud, cadence: 15m, rows: 1200}
+  - {name: purchase_orders, source: erp_cloud, cadence: 15m, rows: 800}
+  - {name: purchase_order_lines, source: erp_cloud, cadence: 15m, rows: 2400}
+  - {name: suppliers, source: erp_cloud, cadence: 15m, rows: 600}
+  - {name: customers, source: erp_cloud, cadence: 15m, rows: 1500}
+  - {name: work_orders, source: erp_cloud, cadence: 15m, rows: 1200}
+  - {name: work_order_tasks, source: erp_cloud, cadence: 15m, rows: 800}
+  - {name: equipment_objects, source: erp_cloud, cadence: 15m, rows: 2400}
+  - {name: sales_parts, source: erp_cloud, cadence: 15m, rows: 600}
+  - {name: customer_invoices, source: erp_cloud, cadence: 15m, rows: 1500}
+  - {name: supplier_invoices, source: erp_cloud, cadence: 15m, rows: 1200}
+  - {name: projects, source: erp_cloud, cadence: 15m, rows: 800}
+  - {name: project_activities, source: erp_cloud, cadence: 15m, rows: 2400}
+  - {name: employees, source: erp_cloud, cadence: 15m, rows: 600}
+  - {name: cost_centers, source: erp_cloud, cadence: 15m, rows: 1500}
+  - {name: sales_quotations, source: erp_cloud, cadence: 15m, rows: 1200}
+  - {name: shipments, source: erp_cloud, cadence: 15m, rows: 800}
+  - {name: shipment_lines, source: erp_cloud, cadence: 15m, rows: 2400}
+  - {name: handling_units, source: erp_cloud, cadence: 15m, rows: 600}
+  - {name: material_requisitions, source: erp_cloud, cadence: 15m, rows: 1500}
+  - {name: inventory_transactions, source: erp_cloud, cadence: 15m, rows: 1200}
+  - {name: pm_actions, source: erp_cloud, cadence: 15m, rows: 800}
+  - {name: fault_reports, source: erp_cloud, cadence: 15m, rows: 2400}
+  - {name: service_contracts, source: erp_cloud, cadence: 15m, rows: 600}
+  - {name: maintenance_plans, source: erp_cloud, cadence: 15m, rows: 1500}
+  - {name: mara, source: sap, cadence: 15m, rows: 1800}
+  - {name: marc, source: sap, cadence: 15m, rows: 700}
+  - {name: makt, source: sap, cadence: 15m, rows: 900}
+  - {name: vbak, source: sap, cadence: 15m, rows: 400}
+  - {name: vbap, source: sap, cadence: 15m, rows: 1800, busy: true}
+  - {name: likp, source: sap, cadence: 15m, rows: 700}
+  - {name: lips, source: sap, cadence: 15m, rows: 900}
+  - {name: ekko, source: sap, cadence: 15m, rows: 400}
+  - {name: ekpo, source: sap, cadence: 15m, rows: 1800}
+  - {name: mseg, source: sap, cadence: 15m, rows: 700}
+  - {name: mkpf, source: sap, cadence: 15m, rows: 900}
+  - {name: bkpf, source: sap, cadence: 15m, rows: 400}
+  - {name: bseg, source: sap, cadence: 15m, rows: 1800}
+  - {name: kna1, source: sap, cadence: 15m, rows: 700}
+  - {name: lfa1, source: sap, cadence: 15m, rows: 900}
+  - {name: aufk, source: sap, cadence: 15m, rows: 400}
+  - {name: afko, source: sap, cadence: 15m, rows: 1800}
+  - {name: afpo, source: sap, cadence: 15m, rows: 700}
+  - {name: equi, source: sap, cadence: 15m, rows: 900}
+  - {name: iflot, source: sap, cadence: 15m, rows: 400}
+  - {name: qmel, source: sap, cadence: daily, rows: 5000}
+  - {name: qmfe, source: sap, cadence: daily, rows: 5000}
+  - {name: vbrk, source: sap, cadence: daily, rows: 5000}
+  - {name: vbrp, source: sap, cadence: daily, rows: 5000}
+  - {name: mard, source: sap, cadence: daily, rows: 5000}

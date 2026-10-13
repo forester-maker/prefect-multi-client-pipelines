@@ -1,0 +1,28 @@
+name: boreal-energy
+display_name: Boreal Energy
+azure_subscription: boreal-prd-noe-0007
+lake_container: boreal-lake
+timezone: Europe/Oslo
+residency: strict                          # run logs never leave the client's cluster
+model_inputs: [customer_orders, work_orders, inventory_parts]
+feeds:
+  - {name: customer_orders, source: erp_cloud, cadence: 15m, rows: 700}
+  - {name: customer_order_lines, source: erp_cloud, cadence: 15m, rows: 1100}
+  - {name: inventory_parts, source: erp_cloud, cadence: 15m, rows: 500}
+  - {name: inventory_part_in_stock, source: erp_cloud, cadence: 15m, rows: 1600}
+  - {name: work_orders, source: erp_cloud, cadence: 15m, rows: 700}
+  - {name: work_order_tasks, source: erp_cloud, cadence: 15m, rows: 1100}
+  - {name: equipment_objects, source: erp_cloud, cadence: 15m, rows: 500}
+  - {name: pm_actions, source: erp_cloud, cadence: 15m, rows: 1600}
+  - {name: fault_reports, source: erp_cloud, cadence: 15m, rows: 700, busy: true}
+  - {name: maintenance_plans, source: erp_cloud, cadence: 15m, rows: 1100}
+  - {name: purchase_orders, source: erp_cloud, cadence: 15m, rows: 500}
+  - {name: purchase_order_lines, source: erp_cloud, cadence: 15m, rows: 1600}
+  - {name: suppliers, source: erp_cloud, cadence: 15m, rows: 700}
+  - {name: employees, source: erp_cloud, cadence: 15m, rows: 1100}
+  - {name: service_contracts, source: erp_cloud, cadence: 15m, rows: 500}
+  - {name: bkpf, source: sap, cadence: daily, rows: 3000}
+  - {name: bseg, source: sap, cadence: daily, rows: 3000}
+  - {name: kna1, source: sap, cadence: daily, rows: 3000}
+  - {name: lfa1, source: sap, cadence: daily, rows: 3000}
+  - {name: equi, source: sap, cadence: daily, rows: 3000}

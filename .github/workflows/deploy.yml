@@ -1,0 +1,35 @@
+# GitHub -> Prefect Cloud.
+#   push to any branch  : validate, then deploy to the dev pool (schedules paused, names suffixed -dev)
+#   merge to main       : validate, then deploy to every client's production pool
+# The pipelines image is built separately (see Dockerfile); a new client is config only.
+name: deploy
+
+on:
+  push:
+    branches: ["**"]
+
+env:
+  PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}   # https://api.prefect.cloud/api/accounts/<account>/workspaces/<workspace>
+  PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install -q -e .
+      - name: Parse every client file, run extractor + DuckDB in-process
+        run: python -m pipelines.validate
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install -q -e .
+      - name: Deploy to ${{ github.ref == 'refs/heads/main' && 'production (client pools)' || 'dev pool' }}
+        run: python -m pipelines.deploy --env ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}

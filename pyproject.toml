@@ -1,0 +1,21 @@
+[project]
+name = "client-pipelines"
+version = "0.1.0"
+description = "the platform team client data pipelines on Prefect Cloud (hybrid: control plane in Cloud, workers and data in the client's Azure)"
+requires-python = ">=3.11"
+dependencies = [
+    "prefect>=3.7,<4",
+    "duckdb>=1.1",
+    "pyarrow>=17",
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "prefect-kubernetes>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pipelines"]
